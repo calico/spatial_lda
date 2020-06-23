@@ -74,7 +74,8 @@ from dataframes containing the location and features of index and background cel
 To fit a Spatial-LDA model, call `spatial_lda.model.train` on the feature matrix and difference matrix generated in
 the featurization step. E.g.,
 
-```  spatial_lda_model = spatial_lda.model.train(train_tumor_marker_features, 
+```python
+spatial_lda_model = spatial_lda.model.train(train_tumor_marker_features, 
                                               train_difference_matrices, 
                                               n_topics=N_TOPICS, 
                                               difference_penalty=DIFFERENCE_PENALTY, 
@@ -86,9 +87,9 @@ the featurization step. E.g.,
 ```
 
 To run inference - computing regularized topic weights on a pre-trained set of topics:
-```
 
-```  complete_lda = spatial_lda.model.infer(
+```python
+complete_lda = spatial_lda.model.infer(
       spatial_lda_model.components_, tumor_marker_features, 
       complete_difference_matrices, difference_penalty=DIFFERENCE_PENALTY,
       n_parallel_processes=N_PARALLEL_PROCESSES)
