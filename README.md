@@ -1,5 +1,7 @@
 # Spatial-LDA
 
+![spatial-lda](https://github.com/calico/spatial_lda/workflows/spatial-lda/badge.svg)
+
 Spatial-LDA is a probabilistic topic model for identifying characteristic cellular microenvironments from
 in-situ multiplexed imaging data such as [MIBI-ToF]() or [CODEX]().
 
