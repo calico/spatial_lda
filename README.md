@@ -11,11 +11,11 @@ This repository contains an implementation of the Spatial-LDA model as described
 
 Please cite our work if you find this tool useful.
 
-**Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments**  
-
-Zhenghao Chen, Ilya Soifer, Hugo Hilton, Leeat Keren, and Vladimir Jojic
-
-Journal of Computational Biology 2020.04.03; doi: http://doi.org/10.1089/cmb.2019.0340
+> **Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments**  
+> 
+> Zhenghao Chen, Ilya Soifer, Hugo Hilton, Leeat Keren, and Vladimir Jojic
+> 
+> Journal of Computational Biology 2020.04.03; doi: http://doi.org/10.1089/cmb.2019.0340
 
 **BibTeX**
 
