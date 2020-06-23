@@ -12,6 +12,7 @@ Please cite our work if you find this tool useful.
 
 **Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments**  
 Zhenghao Chen, Ilya Soifer, Hugo Hilton, Leeat Keren, and Vladimir Jojic
+
 Journal of Computational Biology 2020.04.03; doi: http://doi.org/10.1089/cmb.2019.0340
 
 **BibTeX**
@@ -45,8 +46,9 @@ between immune cells in the mouse spleen.
 
 (TODO): Add notebooks to Colab and update links here.
 
-[**TNBC Analysis**](...)
-<a href=""><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
+[**Mouse Spleen Analysis**](https://drive.google.com/file/d/120835hoLuRztIZG7c0LMEewy5VI9HuZF/view?usp=sharing)
+
+<a href="https://drive.google.com/file/d/120835hoLuRztIZG7c0LMEewy5VI9HuZF/view?usp=sharing"><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
 
 ### (2) Applying Spatial-LDA to a MIBI-ToF dataset of Triple Negative Breast Cancer (TNBC) tumors
 
@@ -54,8 +56,9 @@ We apply Spatial-LDA to a dataset of TNBC tumors from [A Structured Tumor-Immune
 Breast Cancer Revealed by Multiplexed Ion Beam Imaging](https://www.sciencedirect.com/science/article/pii/S0092867418311000)
 to identify prototypical tumor-immune microenvironments in TNBC.
 
-[**TNBC Analysis**](...)
-<a href=""><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
+[**TNBC Analysis**](https://drive.google.com/file/d/1GJpdw9jvOlR_GZpbgeBYq9NXWeeZ69aG/view?usp=sharing)
+
+<a href="https://drive.google.com/file/d/1GJpdw9jvOlR_GZpbgeBYq9NXWeeZ69aG/view?usp=sharing"><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
 
 For convenience, we have included pre-processed versions of the data from the two datasets above under 'data/'.
 
