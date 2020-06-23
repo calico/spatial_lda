@@ -32,7 +32,7 @@ how to use Spatial-LDA.
 
 ## Installation
 
-(TODO): Add package to PyPI so people can pip install it.
+`pip install spatial_lda`
 
 ## Examples
 
@@ -43,8 +43,6 @@ Please refer to the included notebooks below for examples of how to train a Spat
 We apply Spatial-LDA to a dataset of mouse spleens from [Deep Profiling of Mouse Splenic Architecture with
 CODEX Multiplexed Imaging](https://www.cell.com/cell/pdf/S0092-8674(18)30904-8.pdf) to validate that it recovers known spatial relationships
 between immune cells in the mouse spleen.
-
-(TODO): Add notebooks to Colab and update links here.
 
 [**Mouse Spleen Analysis**](https://drive.google.com/file/d/120835hoLuRztIZG7c0LMEewy5VI9HuZF/view?usp=sharing)
 
