@@ -37,7 +37,7 @@ how to use Spatial-LDA.
 
 Please refer to the included notebooks below for examples of how to train a Spatial-LDA model. We include two notebooks:
 
-### (2) Applying Spatial-LDA to a CODEX dataset of mouse spleen tissues
+### (1) Applying Spatial-LDA to a CODEX dataset of mouse spleen tissues
 
 We apply Spatial-LDA to a dataset of mouse spleens from [Deep Profiling of Mouse Splenic Architecture with
 CODEX Multiplexed Imaging](https://www.cell.com/cell/pdf/S0092-8674(18)30904-8.pdf) to validate that it recovers known spatial relationships
@@ -48,7 +48,7 @@ between immune cells in the mouse spleen.
 [**TNBC Analysis**](...)
 <a href=""><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
 
-### (1) Applying Spatial-LDA to a MIBI-ToF dataset of Triple Negative Breast Cancer (TNBC) tumors
+### (2) Applying Spatial-LDA to a MIBI-ToF dataset of Triple Negative Breast Cancer (TNBC) tumors
 
 We apply Spatial-LDA to a dataset of TNBC tumors from [A Structured Tumor-Immune Microenvironment in Triple Negative
 Breast Cancer Revealed by Multiplexed Ion Beam Imaging](https://www.sciencedirect.com/science/article/pii/S0092867418311000)
