@@ -76,14 +76,14 @@ the featurization step. E.g.,
 
 ```python
 spatial_lda_model = spatial_lda.model.train(train_tumor_marker_features, 
-                                              train_difference_matrices, 
-                                              n_topics=N_TOPICS, 
-                                              difference_penalty=DIFFERENCE_PENALTY, 
-                                              verbosity=1,
-                                              n_parallel_processes=3,
-                                              n_iters=3,
-                                              admm_rho=0.1,
-                                              primal_dual_mu=2)
+                                            train_difference_matrices, 
+                                            n_topics=N_TOPICS, 
+                                            difference_penalty=DIFFERENCE_PENALTY, 
+                                            verbosity=1,
+                                            n_parallel_processes=3,
+                                            n_iters=3,
+                                            admm_rho=0.1,
+                                            primal_dual_mu=2)
 ```
 
 To run inference - computing regularized topic weights on a pre-trained set of topics:
