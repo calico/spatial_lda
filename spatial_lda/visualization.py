@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from matplotlib import colors
 import palettable.cartocolors.qualitative as qual_palettes
 import pandas as pd
 import pickle
