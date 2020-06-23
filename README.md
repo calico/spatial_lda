@@ -3,7 +3,8 @@
 ![spatial-lda](https://github.com/calico/spatial_lda/workflows/spatial-lda/badge.svg)
 
 Spatial-LDA is a probabilistic topic model for identifying characteristic cellular microenvironments from
-in-situ multiplexed imaging data such as [MIBI-ToF]() or [CODEX]().
+in-situ multiplexed imaging data such as [MIBI-ToF](https://www.sciencedirect.com/science/article/pii/S0092867418311000)
+or [CODEX](https://www.cell.com/cell/pdf/S0092-8674\(18\)30904-8.pdf).
 
 This repository contains an implementation of the Spatial-LDA model as described in the paper
 [Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments](https://www.liebertpub.com/doi/full/10.1089/cmb.2019.0340).
@@ -11,6 +12,7 @@ This repository contains an implementation of the Spatial-LDA model as described
 Please cite our work if you find this tool useful.
 
 **Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments**  
+
 Zhenghao Chen, Ilya Soifer, Hugo Hilton, Leeat Keren, and Vladimir Jojic
 
 Journal of Computational Biology 2020.04.03; doi: http://doi.org/10.1089/cmb.2019.0340
@@ -32,7 +34,11 @@ how to use Spatial-LDA.
 
 ## Installation
 
+The easiest way to install the Spatial-LDA package is via `pip`:
+
 `pip install spatial_lda`
+
+Alternatively, you can checkout this repository and replace 
 
 ## Examples
 
@@ -41,7 +47,7 @@ Please refer to the included notebooks below for examples of how to train a Spat
 ### (1) Applying Spatial-LDA to a CODEX dataset of mouse spleen tissues
 
 We apply Spatial-LDA to a dataset of mouse spleens from [Deep Profiling of Mouse Splenic Architecture with
-CODEX Multiplexed Imaging](https://www.cell.com/cell/pdf/S0092-8674(18)30904-8.pdf) to validate that it recovers known spatial relationships
+CODEX Multiplexed Imaging](https://www.cell.com/cell/pdf/S0092-8674\(18\)30904-8.pdf) to validate that it recovers known spatial relationships
 between immune cells in the mouse spleen.
 
 [**Mouse Spleen Analysis**](https://drive.google.com/file/d/120835hoLuRztIZG7c0LMEewy5VI9HuZF/view?usp=sharing)
@@ -97,3 +103,6 @@ complete_lda = spatial_lda.model.infer(
       complete_difference_matrices, difference_penalty=DIFFERENCE_PENALTY,
       n_parallel_processes=N_PARALLEL_PROCESSES)
 ```
+
+For reference, we also include an earlier primal-dual based implementation of the model that was described in an
+earlier version of our paper. However, the ADMM based solution should be preferred as it should be significantly faster.

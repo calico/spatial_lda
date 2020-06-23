@@ -11,7 +11,7 @@ setuptools.setup(
     description="Implementation of the Spatial-LDA model",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/calico/multi_imaging/",
+    url="https://github.com/calico/spatial_lda/",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
