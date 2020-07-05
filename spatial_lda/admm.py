@@ -92,6 +92,7 @@ def compute_r(gamma, u, C, e, rho, s, t):
 
 
 def build_linear_system(gamma, u, C, e, rho, s, t):
+    """Build the linear system for ADMM.primal_dual (see appendix section 5.2.7)."""
     n, k = e.shape
     H = hessian_f0(gamma, e, rho, s)
     uC = scipy.sparse.diags(np.squeeze(u), 0).dot(C)
@@ -122,6 +123,7 @@ def spsolve(M, r):
 
 
 def line_search(gamma, u, C, e, rho, s, t, l):
+    """Line search for ADMM.primal_dual (see appendix section 5.2.4)."""
     n, k = e.shape
     M, r = build_linear_system(gamma, u, C, e, rho, s, t)
     delta = spsolve(M, r)
@@ -151,6 +153,7 @@ def line_search(gamma, u, C, e, rho, s, t, l):
 
 
 def primal_dual(e, rho, D, s, mu=2, verbosity=0, max_iter=MAXITER):
+    """ADMM.primal_dual for fusion problem (see appendix section 5.2.4)."""
     l, n = D.shape
     _, k = e.shape
     assert e.shape[0] == D.shape[1]
@@ -250,6 +253,7 @@ def get_update_step(taus, r, rho):
 
 def newton_regularized_dirichlet(
         rho, r, max_iter=30, ls_iter=10, tol=1e-4, verbose=False, alpha=0.01, beta=0.5, verbosity=0):
+    """Newton optimization for the regularized Dirichlet step of ADMM (see appendix section 5.2.8)."""
     n, k = r.shape
     taus = np.ones((np.prod(r.shape), 1))
     new_li = li(taus, r, rho)
@@ -343,6 +347,30 @@ def primal_objective(taus, cs, s, D):
 
 
 def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
+    """Performs an ADMM update to optimize per-cell topic prior Xi given LDA parameters.
+    
+    Reference: Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments.
+    
+    This performs the update for Xi (refer to eqn. 5 in the appendix) which is alternated with the modified
+    LDA fit (which optimizes phi, gamma and lambda).
+
+    Args:
+        cs: C_ik = Digamma(gamma_ik) - Digamma(sum_k gamma_ik) where gamma is the unnormalized topic preference of
+            cell i for topic k.
+        D: Difference matrix that encodes pairs of cells that should be regularized to be similar
+           (see: featurization.make_merged_difference_matrix). This should have shape (num_edges x num_cells).
+        s: Difference penalty for each edge / pair of cells that should be regularized to be similar.
+           This should have shape (num_edges). In the paper this is denoted (1 / d_ij). The larger s is, the more
+           strongly adjacent cells are forced to agree on their topic priors.
+        rho: ADMM parameter controlling the strength of the consensus term. Higher value of rho force the independent
+             Xis to converge more quickly to a common consensus.
+        verbosity: Whether to print debugging output.
+        max_iter: Maximum number of ADMM iterations to run.
+        max_dirichlet_iter: Maximum number of newton steps to take in computing updates for tau (see 5.2.8 in the
+                            appendix).
+    Returns:
+        Xi (see section 2.4 in the reference).
+    """ 
     taus = np.ones(cs.shape)
     xis = np.ones(cs.shape)
     v = np.zeros(cs.shape)
