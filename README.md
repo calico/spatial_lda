@@ -34,11 +34,13 @@ how to use Spatial-LDA.
 
 ## Installation
 
-The easiest way to install the Spatial-LDA package is via `pip`:
+The easiest and preferred way to install the Spatial-LDA package is via `pip`:
 
 `pip install spatial_lda`
 
-Alternatively, you can checkout this repository and replace 
+Alternatively, you can clone this repository and run setup.py directly (assuming you have setuptools installed).
+
+`python setup.py install`
 
 ## Examples
 
