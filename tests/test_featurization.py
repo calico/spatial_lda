@@ -44,6 +44,24 @@ class TestFeaturization(unittest.TestCase):
         true_result = np.concatenate(true_result, axis=0)
         np.testing.assert_allclose(true_result, all_sample_features.values)
 
+    def test_serial_featurize_samples(self):
+        n_samples = 5
+        size = 20
+        k = 6
+        np.random.seed(42)
+        fake_data = np.random.randn(n_samples, size, size, k)
+        fake_samples = {'sample-%d' % i : make_grid_df(fake_data[i]) for i in range(n_samples)}
+        neighborhood_feature_fn = functools.partial(featurization.neighborhood_to_avg_marker,
+                                                    markers=['marker-%d' % i for i in range(k)])
+        all_sample_features = featurization.featurize_samples(
+                fake_samples, neighborhood_feature_fn, 1, 'is_anchor', 'x', 'y', n_processes=4)
+        all_sample_features_serial = featurization.featurize_samples(
+                fake_samples, neighborhood_feature_fn, 1, 'is_anchor', 'x', 'y', n_processes=None)
+
+        np.testing.assert_allclose(all_sample_features.values,
+                                    all_sample_features_serial.values)
+
+
 if __name__ == '__main__':
     unittest.main()
 

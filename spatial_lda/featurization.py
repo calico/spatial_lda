@@ -56,7 +56,7 @@ def _featurize_sample(data, neighborhood_feature_fn, radius, is_anchor_col,
 def featurize_samples(sample_dfs, neighborhood_feature_fn, radius, is_anchor_col,
                       x_col, y_col, z_col=None, n_processes=None):
     """Extract features from a set of cells using aggregate statistics of their local neighborhood.
-    
+
     Args:
         sample_dfs: Dictionary mapping `sample_id` to sample dataframe. Sample dataframes should contain information
                     about 1 cell per row. Columns should mininmally include x, y (and optionally z) coordinates +
@@ -70,7 +70,7 @@ def featurize_samples(sample_dfs, neighborhood_feature_fn, radius, is_anchor_col
         y_col: Name of column containing y-coordinate.
         z_col: Name of column containing z-coordinate.
         n_processes: Number of parallel processes to use when featurizing cells.
-    
+
     Returns:
         One dataframe containing one row per index cell across all samples with their neighborhood features. Index
         cells with empty neighborhoods are removed from this dataframe.
@@ -89,7 +89,7 @@ def featurize_samples(sample_dfs, neighborhood_feature_fn, radius, is_anchor_col
                                             total=total))
     else:
         for i, sample_df in sample_dfs.items():
-            sample_features = featurize_sample_fn(sample_df)
+            sample_features = featurize_sample_fn((i, sample_df))
             all_sample_features.append(sample_features)
 
     all_sample_features = pd.concat(all_sample_features).fillna(0)
