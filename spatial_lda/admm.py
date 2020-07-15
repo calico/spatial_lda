@@ -270,9 +270,9 @@ def newton_regularized_dirichlet(
             new_taus = taus - t * step
             new_li = li(new_taus, r, rho)
             if verbosity >= 3:
-                logging.info(f'  Line search: {ls_it} neg.log.lik.: {new_li}',
-                             f'old neg.log.lik.:{old_li}',
-                             f'sc:{sc} t:{t}')
+                logging.info(f'  Line search: {ls_it} neg.log.lik.: {new_li}'
+                             f' old neg.log.lik.:{old_li}'
+                             f' sc:{sc} t:{t}')
             # Armijo-Goldstein condition
             if new_li > old_li - t * alpha * sc:
                 t = t * beta
@@ -293,11 +293,11 @@ def newton_regularized_dirichlet(
         if old_li - new_li < tol:
             break
     if verbosity >= 2:
-        logging.info(f'\tRegularized Dirichlet iter: {it:} objective: {new_li:.4g}',
+        logging.info(f'\tRegularized Dirichlet iter: {it:} objective: {new_li:.4g}'
                      f' gradient norm: {g_norm:.4g} sc: {sc:.4g}')
     if it == max_iter - 1:
         logging.warn(' Regularized Dirichlet did not converge.')
-        logging.info(new_li, old_li)
+        logging.info(f'new_li:{new_li} old_li:{old_li}')
         with open('nrd.dbg.pkl', 'wb') as f:
             pickle.dump((rho, r), f)
         raise Exception('Stopping in admm.newton_regularized_dirichlet.')
@@ -348,9 +348,9 @@ def primal_objective(taus, cs, s, D):
 
 def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
     """Performs an ADMM update to optimize per-cell topic prior Xi given LDA parameters.
-    
+
     Reference: Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments.
-    
+
     This performs the update for Xi (refer to eqn. 5 in the appendix) which is alternated with the modified
     LDA fit (which optimizes phi, gamma and lambda).
 
@@ -370,7 +370,7 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
                             appendix).
     Returns:
         Xi (see section 2.4 in the reference).
-    """ 
+    """
     taus = np.ones(cs.shape)
     xis = np.ones(cs.shape)
     v = np.zeros(cs.shape)
@@ -409,10 +409,10 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
             norm_v = np.linalg.norm(v)
             duration = time.time() - start
             objective = primal_objective(taus, cs, s, D)
-            logging.info(f'\nADDM it:{i} primal res.:{primal_residual:.5g}',
-                         f'dual res.:{dual_residual:.5g}.',
-                         f'norm of v:{norm_v:.5g}',
-                         f'objective: {objective:.5g}',
-                         f'rho: {rho:.5f}',
-                         f'Time since start:{duration:.2f} seconds\n')
+            logging.info(f'\nADDM it:{i} primal res.:{primal_residual:.5g}'
+                         f' dual res.:{dual_residual:.5g}.'
+                         f' norm of v:{norm_v:.5g}'
+                         f' objective: {objective:.5g}'
+                         f' rho: {rho:.5f}'
+                         f' Time since start:{duration:.2f} seconds\n')
     return xis
