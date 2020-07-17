@@ -107,11 +107,15 @@ def featurize_spleens(spleen_dfs, neighborhood_feature_fn, radius=100, n_process
                              n_processes=n_processes)
 
 
-def make_nearest_neighbor_graph(tumor_features, patient_dfs, tumor_idx):
-    tumor_idxs = tumor_features.index.map(lambda x: x[0])
-    tumor_rows = tumor_features[tumor_idxs == tumor_idx]
-    cell_idx = tumor_rows.index.map(lambda x: x[1])
-    cell_coords = patient_dfs[tumor_idx].loc[cell_idx][['x', 'y']].values
+def make_nearest_neighbor_graph(sample_features, sample_dfs, sample_idx, x_col, y_col, z_col=None):
+    sample_idxs = sample_features.index.map(lambda x: x[0])
+    sample_rows = sample_features[sample_idxs == sample_idx]
+    cell_idx = sample_rows.index.map(lambda x: x[1])
+    if z_col is None:
+        coords = [x_col, y_col]
+    else:
+        coords = [x_col, y_col, z_col]
+    cell_coords = sample_dfs[sample_idx].loc[cell_idx][coords].values
     vor = Voronoi(cell_coords)
     num_edges = vor.ridge_points.shape[0]
     num_nodes = len(cell_coords)
@@ -145,13 +149,14 @@ def make_difference_matrix(num_nodes, src_nodes, dst_nodes):
     return difference_matrix
 
 
-def make_merged_difference_matrices(tumor_features, patient_dfs,
+def make_merged_difference_matrices(sample_features, sample_dfs,
+                                    x_col, y_col, z_col=None,
                                     reduce_to_mst=True):
     difference_matrices = dict()
-    tumor_idxs = tumor_features.index.map(lambda x: x[0])
-    for tumor_idx in set(tumor_idxs):
+    sample_idxs = sample_features.index.map(lambda x: x[0])
+    for sample_idx in set(sample_idxs):
         graph = make_nearest_neighbor_graph(
-            tumor_features, patient_dfs, tumor_idx)
+            sample_features, sample_dfs, sample_idx, x_col, y_col, z_col=z_col)
         num_nodes, src_nodes, dst_nodes, edge_lengths = graph
         difference_matrix = make_difference_matrix(
             num_nodes, src_nodes, dst_nodes)
@@ -159,5 +164,5 @@ def make_merged_difference_matrices(tumor_features, patient_dfs,
             mst_mask = make_minimum_spaning_tree_mask(
                 num_nodes, src_nodes, dst_nodes, edge_lengths)
             difference_matrix = difference_matrix[mst_mask, :]
-        difference_matrices[tumor_idx] = difference_matrix
+        difference_matrices[sample_idx] = difference_matrix
     return difference_matrices
