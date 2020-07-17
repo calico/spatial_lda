@@ -48,7 +48,9 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
                                  ('diff_matrix', sample_diff_matrices),
                                  ('diff_penalty', diff_penalties),
                                  ('sample_id', unique_idxs),
-                                 ('verbosity', itertools.repeat(verbosity)),
+                                 # Logging causes multiprocessing to get stuck
+                                 # (https://pythonspeed.com/articles/python-multiprocessing/)
+                                 ('verbosity', itertools.repeat(0)),                               
                                  ('rho', itertools.repeat(admm_rho)),
                                  ('mu', itertools.repeat(primal_dual_mu))))
             # convert into a list of keyword dictionaries
