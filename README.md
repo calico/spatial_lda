@@ -66,7 +66,12 @@ to identify prototypical tumor-immune microenvironments in TNBC.
 
 <a href="https://drive.google.com/file/d/1GJpdw9jvOlR_GZpbgeBYq9NXWeeZ69aG/view?usp=sharing"><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
 
-For convenience, we have included pre-processed versions of the data from the two datasets above under 'data/'.
+For convenience, we have included pre-processed versions of the data from the two datasets above under 'data/' and
+pretrained models (the output of these notebooks) under 'models/'.
+
+Please note that in order to download the data and model files you will need to install and enable 
+[Git Large File Storage (LFS)](https://docs.github.com/en/github/managing-large-files/installing-git-large-file-storage)
+before cloning this repository.
 
 ## Usage
 
