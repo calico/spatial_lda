@@ -52,9 +52,9 @@ We apply Spatial-LDA to a dataset of mouse spleens from [Deep Profiling of Mouse
 CODEX Multiplexed Imaging](https://www.cell.com/cell/pdf/S0092-8674\(18\)30904-8.pdf) to validate that it recovers known spatial relationships
 between immune cells in the mouse spleen.
 
-[**Mouse Spleen Analysis**](https://drive.google.com/file/d/120835hoLuRztIZG7c0LMEewy5VI9HuZF/view?usp=sharing)
+[**Mouse Spleen Analysis**](https://colab.research.google.com/drive/1L-OOo2WNkIdR7sjKx4U2Ql214SYoh1sE?usp=sharing)
 
-<a href="https://drive.google.com/file/d/120835hoLuRztIZG7c0LMEewy5VI9HuZF/view?usp=sharing"><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
+<a href="https://colab.research.google.com/drive/1L-OOo2WNkIdR7sjKx4U2Ql214SYoh1sE?usp=sharing"><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
 
 ### (2) Applying Spatial-LDA to a MIBI-ToF dataset of Triple Negative Breast Cancer (TNBC) tumors
 
@@ -62,9 +62,9 @@ We apply Spatial-LDA to a dataset of TNBC tumors from [A Structured Tumor-Immune
 Breast Cancer Revealed by Multiplexed Ion Beam Imaging](https://www.sciencedirect.com/science/article/pii/S0092867418311000)
 to identify prototypical tumor-immune microenvironments in TNBC.
 
-[**TNBC Analysis**](https://drive.google.com/file/d/1GJpdw9jvOlR_GZpbgeBYq9NXWeeZ69aG/view?usp=sharing)
+[**TNBC Analysis**](https://colab.research.google.com/drive/1Dx8nW37OFaRMN6ILfrwQ6nhDAMQAdNH4?usp=sharing)
 
-<a href="https://drive.google.com/file/d/1GJpdw9jvOlR_GZpbgeBYq9NXWeeZ69aG/view?usp=sharing"><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
+<a href="https://colab.research.google.com/drive/1Dx8nW37OFaRMN6ILfrwQ6nhDAMQAdNH4?usp=sharing"><img src="https://colab.research.google.com/img/colab_favicon_256px.png" width="128"></a>
 
 For convenience, we have included pre-processed versions of the data from the two datasets above under 'data/' and
 pretrained models (the output of these notebooks) under 'models/'.
