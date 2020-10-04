@@ -287,12 +287,21 @@ class LatentDirichletAllocation(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, n_components=10, doc_topic_prior=None,
+                 fixed_components=None,
                  topic_word_prior=None, learning_method='batch',
                  learning_decay=.7, learning_offset=10., max_iter=10,
                  batch_size=128, evaluate_every=-1, total_samples=1e6,
                  perp_tol=1e-1, mean_change_tol=1e-3, max_doc_update_iter=100,
                  n_jobs=None, verbose=0, random_state=None, n_topics=None):
+
         self.n_components = n_components
+        if fixed_components is not None:
+            self.fixed_components_ = fixed_components
+            self.n_fixed_components = fixed_components.shape[0]
+            assert(self.n_fixed_components <= self.n_components)
+        else:
+            self.n_fixed_components = 0
+            self.fixed_components = None
         self.doc_topic_prior = doc_topic_prior
         self.topic_word_prior = topic_word_prior
         self.learning_method = learning_method
@@ -358,6 +367,9 @@ class LatentDirichletAllocation(BaseEstimator, TransformerMixin):
         # In the literature, this is called `lambda`
         self.components_ = self.random_state_.gamma(
             init_gamma, init_var, (self._n_components, n_features))
+        
+        if self.fixed_components_ is not None:
+            self.components_[:self.n_fixed_components] = self.fixed_components_
 
         # In the literature, this is `exp(E[log(beta)])`
         self.exp_dirichlet_component_ = np.exp(
@@ -477,6 +489,9 @@ class LatentDirichletAllocation(BaseEstimator, TransformerMixin):
             self.components_ *= (1 - weight)
             self.components_ += (weight * (self.topic_word_prior_
                                            + doc_ratio * suff_stats))
+
+        if self.fixed_components_ is not None:
+            self.components_[:self.n_fixed_components] = self.fixed_components_
 
         # update `component_` related variables
         self.exp_dirichlet_component_ = np.exp(
