@@ -301,7 +301,7 @@ class LatentDirichletAllocation(BaseEstimator, TransformerMixin):
             assert(self.n_fixed_components <= self.n_components)
         else:
             self.n_fixed_components = 0
-            self.fixed_components = None
+            self.fixed_components_ = None
         self.doc_topic_prior = doc_topic_prior
         self.topic_word_prior = topic_word_prior
         self.learning_method = learning_method
