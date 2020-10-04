@@ -21,6 +21,8 @@ def _update_xi(counts, diff_matrix, diff_penalty, sample_id, verbosity=0,
     cs = digamma(counts) - digamma(np.sum(counts, axis=1, keepdims=True))
     s = weight * np.ones(diff_matrix.shape[0])
     result = admm.admm(cs, diff_matrix, s, rho, verbosity=verbosity, mu=mu)
+    if verbosity >= 1:
+        logging.info(f'>>> Done inferring topic weights for sample {sample_id}')
     return result
 
 
@@ -46,7 +48,9 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
                                  ('diff_matrix', sample_diff_matrices),
                                  ('diff_penalty', diff_penalties),
                                  ('sample_id', unique_idxs),
-                                 ('verbosity', itertools.repeat(verbosity)),
+                                 # Logging causes multiprocessing to get stuck
+                                 # (https://pythonspeed.com/articles/python-multiprocessing/)
+                                 ('verbosity', itertools.repeat(0)),                               
                                  ('rho', itertools.repeat(admm_rho)),
                                  ('mu', itertools.repeat(primal_dual_mu))))
             # convert into a list of keyword dictionaries
@@ -55,7 +59,7 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
             results = list(tqdm(pool.imap(_wrap_update_xi, kw_tasks),
                                 total=len(unique_idxs),
                                 position=1,
-                                desc='Spatial LDA inference'))
+                                desc='Update xi'))
             new_xis = np.concatenate(results)
     else:
         for sample_idx in np.unique(sample_idxs):
