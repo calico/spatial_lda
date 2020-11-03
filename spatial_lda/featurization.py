@@ -27,9 +27,18 @@ def neighborhood_to_count(df, indices):
 
 
 def _featurize_cells(df, neighborhood_feature_fn, radius, is_anchor_col,
-                     x_col, y_col, z_col=None):
+                     x_col, y_col, z_col=None, include_anchors = False):
     anchor_cells = df[df[is_anchor_col]]
-    neighborhood_cells = df[~df[is_anchor_col]]
+    if include_anchors:
+        neighborhood_cells = df
+    else:
+        neighborhood_cells = df[~df[is_anchor_col]]
+        
+    # Throw an error if there are no cells in neighborhoods
+    # For example all cells are anchors and include_anchors == False
+    if len(neighborhood_cells.index) == 0:
+        raise ValueError("There are no neighbours to compute features from (try include_anchors = True)")
+        
     feature_fn = functools.partial(neighborhood_feature_fn, neighborhood_cells)
     coord_cols = [x_col, y_col]
     if z_col is not None:
@@ -45,16 +54,17 @@ def _featurize_cells(df, neighborhood_feature_fn, radius, is_anchor_col,
 
 
 def _featurize_sample(data, neighborhood_feature_fn, radius, is_anchor_col,
-                      x_col, y_col, z_col=None):
+                      x_col, y_col, z_col=None, include_anchors = False):
     i, df = data
     sample_features = _featurize_cells(df, neighborhood_feature_fn, radius,
-                                       is_anchor_col, x_col, y_col, z_col=z_col)
+                                       is_anchor_col, x_col, y_col, z_col=z_col,
+                                       include_anchors = include_anchors)
     sample_features.index = map(lambda x: (i, x), sample_features.index)
     return sample_features
 
 
 def featurize_samples(sample_dfs, neighborhood_feature_fn, radius, is_anchor_col,
-                      x_col, y_col, z_col=None, n_processes=None):
+                      x_col, y_col, z_col=None, n_processes=None, include_anchors = False):
     """Extract features from a set of cells using aggregate statistics of their local neighborhood.
 
     Args:
@@ -80,7 +90,7 @@ def featurize_samples(sample_dfs, neighborhood_feature_fn, radius, is_anchor_col
     all_sample_features = []
     featurize_sample_fn = functools.partial(
         _featurize_sample, neighborhood_feature_fn=neighborhood_feature_fn, radius=radius,
-        is_anchor_col=is_anchor_col, x_col=x_col, y_col=y_col, z_col=z_col)
+        is_anchor_col=is_anchor_col, x_col=x_col, y_col=y_col, z_col=z_col, include_anchors = include_anchors)
     if n_processes is not None:
         with Pool(n_processes) as pool:
             total = len(sample_dfs)
