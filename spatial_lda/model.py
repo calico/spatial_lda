@@ -171,7 +171,7 @@ def infer(components, sample_features, difference_matrices, difference_penalty=1
                       difference_matrices,
                       difference_penalty,
                       gamma=gamma,
-                      n_parallel_processes=2,
+                      n_parallel_processes=n_parallel_processes,
                       verbosity=0)
     complete_lda.doc_topic_prior_ = xis
     columns = [_topic_name(i) for i in range(n_topics)]
