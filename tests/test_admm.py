@@ -4,7 +4,7 @@ import os
 import shutil
 import tempfile
 import unittest
-
+import logging
 import numpy as np
 import scipy.optimize
 from scipy.special import gammaln
@@ -304,6 +304,11 @@ class TestADMM(unittest.TestCase):
         true_params_objective = primal_objective(true_xis, cs, s, D)
         np.testing.assert_almost_equal(normed_xis, normed_true_xis, decimal=2)
         np.testing.assert_array_less(admm_objective, true_params_objective)
+
+        xis_t = admm(cs=cs, D=D, s=s, rho=rho, verbosity=1, max_iter=50,
+                   max_dirichlet_iter=20, threshold=0.01)
+        admm_objective_t = primal_objective(xis_t, cs, s, D)
+        np.testing.assert_array_less(admm_objective_t, true_params_objective)
 
 if __name__ == '__main__':
     unittest.main()

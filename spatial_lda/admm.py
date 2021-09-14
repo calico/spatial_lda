@@ -409,7 +409,7 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2, t
 
         objective_old = primal_objective(taus_old, cs, s, D)
         objective = primal_objective(taus, cs, s, D)
-        pct_change = (objective_old - objective) / objective_old
+        pct_change = abs(objective_old - objective) / objective_old
 
         if verbosity >= 1:
             norm_v = np.linalg.norm(v)
