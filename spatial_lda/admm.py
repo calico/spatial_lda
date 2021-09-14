@@ -346,7 +346,7 @@ def primal_objective(taus, cs, s, D):
     return objective
 
 
-def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
+def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2, threshold=None):
     """Performs an ADMM update to optimize per-cell topic prior Xi given LDA parameters.
 
     Reference: Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments.
@@ -368,6 +368,8 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
         max_iter: Maximum number of ADMM iterations to run.
         max_dirichlet_iter: Maximum number of newton steps to take in computing updates for tau (see 5.2.8 in the
                             appendix).
+        threshold: Cutoff for the percent change in the objective function.  Typical value is
+            0.01.  If None, then all iterations in max_iter are executed.
     Returns:
         Xi (see section 2.4 in the reference).
     """
@@ -405,14 +407,24 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
         elif residual_ratio < 1 / ADMM_RESIDUAL_RATIO_BOUND:
             rho /= ADMM_RHO_SCALE
 
+        objective_old = primal_objective(taus_old, cs, s, D)
+        objective = primal_objective(taus, cs, s, D)
+        pct_change = (objective_old - objective) / objective_old
+
         if verbosity >= 1:
             norm_v = np.linalg.norm(v)
             duration = time.time() - start
-            objective = primal_objective(taus, cs, s, D)
             logging.info(f'\nADDM it:{i} primal res.:{primal_residual:.5g}'
                          f' dual res.:{dual_residual:.5g}.'
                          f' norm of v:{norm_v:.5g}'
                          f' objective: {objective:.5g}'
+                         f' old objective: {objective_old:.5g}'
+                         f' percent change: {pct_change:.5g}'
                          f' rho: {rho:.5f}'
                          f' Time since start:{duration:.2f} seconds\n')
+
+        if threshold is not None:
+            if pct_change < threshold:
+                break
+
     return xis
