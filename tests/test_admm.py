@@ -304,11 +304,16 @@ class TestADMM(unittest.TestCase):
         true_params_objective = primal_objective(true_xis, cs, s, D)
         np.testing.assert_almost_equal(normed_xis, normed_true_xis, decimal=2)
         np.testing.assert_array_less(admm_objective, true_params_objective)
-
+        # test admm threshold
         xis_t = admm(cs=cs, D=D, s=s, rho=rho, verbosity=1, max_iter=50,
-                   max_dirichlet_iter=20, threshold=0.01)
+                     max_dirichlet_iter=20, threshold=0.01)
         admm_objective_t = primal_objective(xis_t, cs, s, D)
         np.testing.assert_array_less(admm_objective_t, true_params_objective)
+        # test primal-dual tolerance level
+        xis_tol = admm(cs=cs, D=D, s=s, rho=rho, verbosity=1, max_iter=40,
+                       max_dirichlet_iter=20, primal_tol=0.01)
+        admm_objective_tol = primal_objective(xis_tol, cs, s, D)
+        np.testing.assert_almost_equal(admm_objective, admm_objective_tol, decimal=2)
 
 if __name__ == '__main__':
     unittest.main()
