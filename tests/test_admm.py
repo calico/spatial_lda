@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import unittest
 import logging
+import time
 import numpy as np
 import scipy.optimize
 from scipy.special import gammaln
@@ -304,16 +305,32 @@ class TestADMM(unittest.TestCase):
         true_params_objective = primal_objective(true_xis, cs, s, D)
         np.testing.assert_almost_equal(normed_xis, normed_true_xis, decimal=2)
         np.testing.assert_array_less(admm_objective, true_params_objective)
-        # test admm threshold
-        xis_t = admm(cs=cs, D=D, s=s, rho=rho, verbosity=1, max_iter=50,
-                     max_dirichlet_iter=20, threshold=0.01)
-        admm_objective_t = primal_objective(xis_t, cs, s, D)
-        np.testing.assert_array_less(admm_objective_t, true_params_objective)
+
+        # test adaptive speed improvements
+        # baseline: max_iters=50, no threshold, default tolerance
+        baseline_start = time.time()
+        base_xis = admm(cs=cs, D=D, s=s, rho=rho, verbosity=0, max_iter=50,
+                   max_dirichlet_iter=20)
+        baseline_time = time.time() - baseline_start
+        baseline_objective = primal_objective(base_xis, cs, s, D)
+
+        # percent change in objective threshold
+        thresh_start = time.time()
+        thresh_xis = admm(cs=cs, D=D, s=s, rho=rho, verbosity=1, max_iter=50,
+                       max_dirichlet_iter=20, threshold=0.05)
+        thresh_time = time.time() - thresh_start
+        thresh_objective = primal_objective(thresh_xis, cs, s, D)
+        np.testing.assert_array_less(thresh_objective, true_params_objective)
+        np.testing.assert_array_less(thresh_time, baseline_time)
+
         # test primal-dual tolerance level
-        xis_tol = admm(cs=cs, D=D, s=s, rho=rho, verbosity=1, max_iter=40,
+        tolerance_start = time.time()
+        tol_xis = admm(cs=cs, D=D, s=s, rho=rho, verbosity=1, max_iter=50,
                        max_dirichlet_iter=20, primal_tol=0.01)
-        admm_objective_tol = primal_objective(xis_tol, cs, s, D)
-        np.testing.assert_almost_equal(admm_objective, admm_objective_tol, decimal=2)
+        tolerance_time = time.time() - tolerance_start
+        tolerance_objective = primal_objective(tol_xis, cs, s, D)
+        np.testing.assert_almost_equal(baseline_objective, tolerance_objective, decimal=2)
+        np.testing.assert_array_less(tolerance_time, baseline_time)
 
 if __name__ == '__main__':
     unittest.main()
