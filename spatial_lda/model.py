@@ -100,9 +100,10 @@ def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
         verbosity: Amount of debug / info updates to see.
         primal_dual_mu: mu used in primal-dual updates (see paper for more details).
         admm_rho: rho used in ADMM optimization (see paper for more details).
-        primal_tol: tolerance level for primal-dual updates.
+        primal_tol: tolerance level for primal-dual updates.  In general, this value should not be
+                    greater than 0.05.
         threshold: Cutoff for the percent change in the admm objective function.  Must be
-        greater than 0 and less than 1.  Typical value is 0.01.
+                    greater than 0 and less than 1.  Typical value is 0.01.
 
     Returns:
         A Spatial-LDA model.
