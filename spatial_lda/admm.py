@@ -375,6 +375,8 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2,
     Returns:
         Xi (see section 2.4 in the reference).
     """
+    if threshold is not None:
+        assert 0 < threshold < 1
     taus = np.ones(cs.shape)
     xis = np.ones(cs.shape)
     v = np.zeros(cs.shape)
