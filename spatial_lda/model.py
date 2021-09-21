@@ -14,13 +14,14 @@ from spatial_lda.online_lda import LatentDirichletAllocation
 
 
 def _update_xi(counts, diff_matrix, diff_penalty, sample_id, verbosity=0,
-               rho=1e-1, mu=2.0):
+               rho=1e-1, mu=2.0, primal_tol=1e-3, threshold=None):
     if verbosity >= 1:
         logging.info(f'>>> Infering topic weights for sample {sample_id}')
     weight = 1. / diff_penalty
     cs = digamma(counts) - digamma(np.sum(counts, axis=1, keepdims=True))
     s = weight * np.ones(diff_matrix.shape[0])
-    result = admm.admm(cs, diff_matrix, s, rho, verbosity=verbosity, mu=mu)
+    result = admm.admm(cs, diff_matrix, s, rho, verbosity=verbosity, mu=mu, primal_tol=primal_tol,
+                       threshold=threshold)
     if verbosity >= 1:
         logging.info(f'>>> Done inferring topic weights for sample {sample_id}')
     return result
@@ -31,7 +32,8 @@ def _wrap_update_xi(inputs):
 
 
 def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
-                 n_parallel_processes, verbosity, primal_dual_mu=2, admm_rho=0.1):
+                n_parallel_processes, verbosity, primal_dual_mu=2, admm_rho=0.1,
+                primal_tol=1e-3, threshold=None):
     sample_idxs = sample_features.index.map(lambda x: x[0])
     new_xis = np.zeros_like(gamma)
     if n_parallel_processes > 1:
@@ -52,7 +54,9 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
                                  # (https://pythonspeed.com/articles/python-multiprocessing/)
                                  ('verbosity', itertools.repeat(0)),                               
                                  ('rho', itertools.repeat(admm_rho)),
-                                 ('mu', itertools.repeat(primal_dual_mu))))
+                                 ('mu', itertools.repeat(primal_dual_mu)),
+                                 ('primal_tol', itertools.repeat(primal_tol)),
+                                 ('threshold', itertools.repeat(threshold))))
             # convert into a list of keyword dictionaries
             kw_tasks = [{k: v for k, v in zip(tasks.keys(), values)}
                         for values in list(zip(*tasks.values()))]
@@ -72,13 +76,15 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
                                               sample_idx,
                                               verbosity=verbosity,
                                               rho=admm_rho,
-                                              mu=primal_dual_mu)
+                                              mu=primal_dual_mu,
+                                              primal_tol=primal_tol,
+                                              threshold=threshold)
     return new_xis
 
 
 def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
           n_iters=3, n_parallel_processes=1, verbosity=0,
-          primal_dual_mu=2, admm_rho=1.0):
+          primal_dual_mu=2, admm_rho=1.0, primal_tol=1e-3, threshold=None):
     """Train a Spatial-LDA model.
     
     Args:
@@ -94,6 +100,10 @@ def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
         verbosity: Amount of debug / info updates to see.
         primal_dual_mu: mu used in primal-dual updates (see paper for more details).
         admm_rho: rho used in ADMM optimization (see paper for more details).
+        primal_tol: tolerance level for primal-dual updates.  In general, this value should not be
+                    greater than 0.05.
+        threshold: Cutoff for the percent change in the admm objective function.  Must be
+                    greater than 0 and less than 1.  Typical value is 0.01.
 
     Returns:
         A Spatial-LDA model.
@@ -118,7 +128,9 @@ def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
                           n_parallel_processes=n_parallel_processes,
                           verbosity=verbosity,
                           primal_dual_mu=primal_dual_mu,
-                          admm_rho=admm_rho)
+                          admm_rho=admm_rho,
+                          primal_tol=primal_tol,
+                          threshold=threshold)
         e_duration = time.time() - e_step_start_time
         logging.info(f'>>> Iteration {i}, E-step took {e_duration} seconds.')
 

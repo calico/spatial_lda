@@ -11,7 +11,7 @@ ALPHA = 0.1
 BETA = 0.5
 MAXLSITER = 60
 MAXITER = 100
-TOL = 1e-3
+#TOL = 1e-3
 ADMM_RESIDUAL_RATIO_BOUND = 4.0
 ADMM_RHO_SCALE = 2.0
 
@@ -152,7 +152,7 @@ def line_search(gamma, u, C, e, rho, s, t, l):
     return gamma, u, step, lsit
 
 
-def primal_dual(e, rho, D, s, mu=2, verbosity=0, max_iter=MAXITER):
+def primal_dual(e, rho, D, s, mu=2, verbosity=0, max_iter=MAXITER, primal_tol=1e-3):
     """ADMM.primal_dual for fusion problem (see appendix section 5.2.4)."""
     l, n = D.shape
     _, k = e.shape
@@ -171,7 +171,7 @@ def primal_dual(e, rho, D, s, mu=2, verbosity=0, max_iter=MAXITER):
             logging.info(
                 f'\tPrimal Dual it: {it}, gap: {nu:.6g}, t: {t:.6g}, step: {step:.6g}, res: {r:.6g}, lsit: {lsit}')
         xis, chis = split_gamma(gamma, n, k, l)
-        if (r < TOL and nu < TOL):
+        if r < primal_tol and nu < primal_tol:
             break
     if verbosity >= 2:
         logging.info(
@@ -309,13 +309,13 @@ def update_e(taus, v, rho):
     return taus + 1 / rho * v
 
 
-def update_xis(es, rho, D, s, verbosity=0, mu=2):
+def update_xis(es, rho, D, s, verbosity=0, mu=2, primal_tol=1e-3):
     n, k = es.shape
     l = D.shape[0]
     xis = []
     for i in range(k):
         e = es[:, [i]]
-        gamma, _ = primal_dual(e, rho, D, s, mu=mu, verbosity=verbosity)
+        gamma, _ = primal_dual(e, rho, D, s, mu=mu, verbosity=verbosity, primal_tol=primal_tol)
         xi, _ = split_gamma(gamma, n, 1, l)
         xis.append(xi)
     return np.concatenate(xis, axis=1)
@@ -346,7 +346,8 @@ def primal_objective(taus, cs, s, D):
     return objective
 
 
-def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
+def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2,
+         primal_tol=1e-3, threshold=None):
     """Performs an ADMM update to optimize per-cell topic prior Xi given LDA parameters.
 
     Reference: Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments.
@@ -368,9 +369,14 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
         max_iter: Maximum number of ADMM iterations to run.
         max_dirichlet_iter: Maximum number of newton steps to take in computing updates for tau (see 5.2.8 in the
                             appendix).
+        primal_tol: tolerance level for primal-dual updates.
+        threshold: Cutoff for the percent change in the objective function.  Typical value is
+            0.01.  If None, then all iterations in max_iter are executed.
     Returns:
         Xi (see section 2.4 in the reference).
     """
+    if threshold is not None:
+        assert 0 < threshold < 1
     taus = np.ones(cs.shape)
     xis = np.ones(cs.shape)
     v = np.zeros(cs.shape)
@@ -379,7 +385,7 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
         es = update_e(taus, v, rho)
         start_xis = time.time()
         xis_old, taus_old = xis, taus
-        xis = update_xis(es, rho, D, s, verbosity=verbosity, mu=mu)
+        xis = update_xis(es, rho, D, s, verbosity=verbosity, mu=mu, primal_tol=primal_tol)
         if verbosity >= 1:
             duration = time.time() - start_xis
             logging.info(f'\tADMM Primal-Dual Fusion took:{duration:.2f} seconds')
@@ -405,14 +411,24 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2):
         elif residual_ratio < 1 / ADMM_RESIDUAL_RATIO_BOUND:
             rho /= ADMM_RHO_SCALE
 
+        objective_old = primal_objective(taus_old, cs, s, D)
+        objective = primal_objective(taus, cs, s, D)
+        pct_change = abs(objective_old - objective) / objective_old
+
         if verbosity >= 1:
             norm_v = np.linalg.norm(v)
             duration = time.time() - start
-            objective = primal_objective(taus, cs, s, D)
             logging.info(f'\nADDM it:{i} primal res.:{primal_residual:.5g}'
                          f' dual res.:{dual_residual:.5g}.'
                          f' norm of v:{norm_v:.5g}'
                          f' objective: {objective:.5g}'
+                         f' old objective: {objective_old:.5g}'
+                         f' percent change: {pct_change:.5g}'
                          f' rho: {rho:.5f}'
                          f' Time since start:{duration:.2f} seconds\n')
+
+        if threshold is not None:
+            if pct_change < threshold:
+                break
+
     return xis
