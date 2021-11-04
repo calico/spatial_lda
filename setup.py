@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="spatial-lda", # Replace with your own username
-    version="0.0.3",
+    name="spatial-lda",
+    version="0.1.2",
     author="Zhenghao Chen, Vladimir Jojic",
     author_email="zhenghao@calicolabs.com, vjojic@calicolabs.com",
     description="Implementation of the Spatial-LDA model",

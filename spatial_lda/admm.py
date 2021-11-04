@@ -134,7 +134,6 @@ def line_search(gamma, u, C, e, rho, s, t, l):
         step_max = np.min((step_max, np.min(u[neg_du] / (-du[neg_du]))))
 
     step = step_max * 0.99
-    r = compute_r(gamma, u, C, e, rho, s, t)
     for lsit in range(MAXLSITER):
         new_gamma = gamma + step * dgamma
         new_u = u + step * du
@@ -309,13 +308,14 @@ def update_e(taus, v, rho):
     return taus + 1 / rho * v
 
 
-def update_xis(es, rho, D, s, verbosity=0, mu=2, primal_tol=1e-3):
+def update_xis(es, rho, D, s, max_iter=100, verbosity=0, mu=2, primal_tol=1e-3):
     n, k = es.shape
     l = D.shape[0]
     xis = []
     for i in range(k):
         e = es[:, [i]]
-        gamma, _ = primal_dual(e, rho, D, s, mu=mu, verbosity=verbosity, primal_tol=primal_tol)
+        gamma, _ = primal_dual(e, rho, D, s, max_iter=max_iter, mu=mu,
+                               verbosity=verbosity, primal_tol=primal_tol)
         xi, _ = split_gamma(gamma, n, 1, l)
         xis.append(xi)
     return np.concatenate(xis, axis=1)
@@ -325,9 +325,9 @@ def update_r(xis, v, cs, rho):
     return xis - 1 / rho * v + 1 / rho * cs
 
 
-def update_tau(r, rho, verbosity=0, max_iter=20):
+def update_tau(r, rho, verbosity=0, max_iter=20, ls_iter=10):
     new_taus = newton_regularized_dirichlet(
-        rho, r, max_iter=max_iter, verbosity=verbosity)
+        rho, r, max_iter=max_iter, ls_iter=ls_iter, verbosity=verbosity)
     assert np.all(new_taus > 0)
     return np.reshape(new_taus, r.shape)
 
@@ -346,8 +346,10 @@ def primal_objective(taus, cs, s, D):
     return objective
 
 
-def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2,
-         primal_tol=1e-3, threshold=None):
+def admm(cs, D, s, rho, verbosity=0, max_iter=15,
+         max_dirichlet_iter=20, max_dirichlet_ls_iter=10,
+         max_primal_dual_iter=400,
+         mu=2, primal_tol=1e-3, threshold=None):
     """Performs an ADMM update to optimize per-cell topic prior Xi given LDA parameters.
 
     Reference: Modeling Multiplexed Images with Spatial-LDA Reveals Novel Tissue Microenvironments.
@@ -367,8 +369,11 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2,
              Xis to converge more quickly to a common consensus.
         verbosity: Whether to print debugging output.
         max_iter: Maximum number of ADMM iterations to run.
+        max_primal_dual_iter: Maximum number of primal-dual iterations to run.
         max_dirichlet_iter: Maximum number of newton steps to take in computing updates for tau (see 5.2.8 in the
                             appendix).
+        max_dirichlet_ls_iter: Maximum number of line-search steps to take in computing updates for tau
+                               (see 5.2.8 in the appendix).
         primal_tol: tolerance level for primal-dual updates.
         threshold: Cutoff for the percent change in the objective function.  Typical value is
             0.01.  If None, then all iterations in max_iter are executed.
@@ -385,7 +390,8 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2,
         es = update_e(taus, v, rho)
         start_xis = time.time()
         xis_old, taus_old = xis, taus
-        xis = update_xis(es, rho, D, s, verbosity=verbosity, mu=mu, primal_tol=primal_tol)
+        xis = update_xis(es, rho, D, s, max_iter=max_primal_dual_iter,
+                         verbosity=verbosity, mu=mu, primal_tol=primal_tol)
         if verbosity >= 1:
             duration = time.time() - start_xis
             logging.info(f'\tADMM Primal-Dual Fusion took:{duration:.2f} seconds')
@@ -395,6 +401,7 @@ def admm(cs, D, s, rho, verbosity=0, max_iter=15, max_dirichlet_iter=20, mu=2,
             r,
             rho,
             max_iter=max_dirichlet_iter,
+            ls_iter=max_dirichlet_ls_iter,
             verbosity=verbosity)
         if verbosity >= 1:
             duration = time.time() - start_tau

@@ -13,7 +13,8 @@ import spatial_lda.admm as admm
 from spatial_lda.online_lda import LatentDirichletAllocation
 
 
-def _update_xi(counts, diff_matrix, diff_penalty, sample_id, verbosity=0,
+def _update_xi(counts, diff_matrix, diff_penalty, sample_id, verbosity=0, max_iter=15,
+               max_primal_dual_iter=400, max_dirichlet_iter=20, max_dirichlet_ls_iter=10,
                rho=1e-1, mu=2.0, primal_tol=1e-3, threshold=None):
     if verbosity >= 1:
         logging.info(f'>>> Infering topic weights for sample {sample_id}')
@@ -21,6 +22,8 @@ def _update_xi(counts, diff_matrix, diff_penalty, sample_id, verbosity=0,
     cs = digamma(counts) - digamma(np.sum(counts, axis=1, keepdims=True))
     s = weight * np.ones(diff_matrix.shape[0])
     result = admm.admm(cs, diff_matrix, s, rho, verbosity=verbosity, mu=mu, primal_tol=primal_tol,
+                       max_dirichlet_iter=max_dirichlet_iter, max_dirichlet_ls_iter=max_dirichlet_ls_iter,
+                       max_primal_dual_iter=max_primal_dual_iter, max_iter=max_iter,
                        threshold=threshold)
     if verbosity >= 1:
         logging.info(f'>>> Done inferring topic weights for sample {sample_id}')
@@ -33,7 +36,8 @@ def _wrap_update_xi(inputs):
 
 def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
                 n_parallel_processes, verbosity, primal_dual_mu=2, admm_rho=0.1,
-                primal_tol=1e-3, threshold=None):
+                max_primal_dual_iter=400, max_dirichlet_iter=20, max_dirichlet_ls_iter=10,
+                max_iter=15, primal_tol=1e-3, threshold=None):
     sample_idxs = sample_features.index.map(lambda x: x[0])
     new_xis = np.zeros_like(gamma)
     if n_parallel_processes > 1:
@@ -50,6 +54,10 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
                                  ('diff_matrix', sample_diff_matrices),
                                  ('diff_penalty', diff_penalties),
                                  ('sample_id', unique_idxs),
+                                 ('max_iter', max_iter),
+                                 ('max_primal_dual_iter', max_primal_dual_iter),
+                                 ('max_dirichlet_iter', max_dirichlet_iter),
+                                 ('max_dirichlet_ls_iter', max_dirichlet_ls_iter),
                                  # Logging causes multiprocessing to get stuck
                                  # (https://pythonspeed.com/articles/python-multiprocessing/)
                                  ('verbosity', itertools.repeat(0)),                               
@@ -74,6 +82,10 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
                                               sample_diff_matrix,
                                               difference_penalty,
                                               sample_idx,
+                                              max_primal_dual_iter=max_primal_dual_iter,
+                                              max_dirichlet_iter=max_dirichlet_iter,
+                                              max_dirichlet_ls_iter=max_dirichlet_ls_iter,
+                                              max_iter=max_iter,
                                               verbosity=verbosity,
                                               rho=admm_rho,
                                               mu=primal_dual_mu,
@@ -83,7 +95,8 @@ def _update_xis(sample_features, difference_matrices, difference_penalty, gamma,
 
 
 def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
-          n_iters=3, n_parallel_processes=1, verbosity=0,
+          max_primal_dual_iter=400, max_dirichlet_iter=20, max_dirichlet_ls_iter=10,
+          max_lda_iter=5, max_admm_iter=15, n_iters=3, n_parallel_processes=1, verbosity=0,
           primal_dual_mu=2, admm_rho=1.0, primal_tol=1e-3, threshold=None):
     """Train a Spatial-LDA model.
     
@@ -96,6 +109,13 @@ def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
         n_topics: Number of topics to fit.
         difference_penalty: Penalty on topic priors of "adjacent" index cells.
         n_iters: Number of outer-loop iterations (LDA + ADMM) to run.
+        max_lda_iter: Maximum number of LDA iterations to run.
+        max_admm_iter: Maximum number of ADMM iterations to run.
+        max_primal_dual_iter: Maximum number of primal-dual iterations to run.
+        max_dirichlet_iter: Maximum number of newton steps to take in computing updates for tau (see 5.2.8 in the
+                            appendix).
+        max_dirichlet_ls_iter: Maximum number of line-search steps to take in computing updates for tau
+                               (see 5.2.8 in the appendix).
         n_parallel_processes: Number of parallel processes to use.
         verbosity: Amount of debug / info updates to see.
         primal_dual_mu: mu used in primal-dual updates (see paper for more details).
@@ -114,7 +134,7 @@ def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
         logging.info(f'>>> Starting iteration {i}')
         m_step_start_time = time.time()
         lda = LatentDirichletAllocation(n_components=n_topics, random_state=0,
-                                        n_jobs=n_parallel_processes, max_iter=5,
+                                        n_jobs=n_parallel_processes, max_iter=max_lda_iter,
                                         doc_topic_prior=xis)
         lda.fit(sample_features.values)
         gamma = lda._unnormalized_transform(sample_features.values)
@@ -126,6 +146,10 @@ def train(sample_features, difference_matrices, n_topics, difference_penalty=1,
                           difference_penalty=difference_penalty,
                           gamma=gamma,
                           n_parallel_processes=n_parallel_processes,
+                          max_iter=max_admm_iter,
+                          max_primal_dual_iter=max_primal_dual_iter,
+                          max_dirichlet_iter=max_dirichlet_iter,
+                          max_dirichlet_ls_iter=max_dirichlet_ls_iter,
                           verbosity=verbosity,
                           primal_dual_mu=primal_dual_mu,
                           admm_rho=admm_rho,
@@ -149,7 +173,8 @@ def _topic_name(i):
 
 
 def infer(components, sample_features, difference_matrices, difference_penalty=1,
-          n_parallel_processes=1):
+          max_primal_dual_iter=400, max_dirichlet_iter=20, max_dirichlet_ls_iter=10,
+          max_admm_iter=15, n_parallel_processes=1):
     """Run inferrence on a Spatial-LDA model.
 
     This runs only the ADMM updates to get spatially-regularized topic weights on `sample_features`, allowing
@@ -163,6 +188,12 @@ def infer(components, sample_features, difference_matrices, difference_penalty=1
                              samples. (I.e., which cells should be regularized to have similar priors on topics).
                              (See featurization.make_merged_difference_matrices).
         difference_penalty: Penalty on topic priors of "adjacent" index cells.
+        max_admm_iter: Maximum number of ADMM iterations to run.
+        max_primal_dual_iter: Maximum number of primal-dual iterations to run.
+        max_dirichlet_iter: Maximum number of newton steps to take in computing updates for tau (see 5.2.8 in the
+                            appendix).
+        max_dirichlet_ls_iter: Maximum number of line-search steps to take in computing updates for tau
+                               (see 5.2.8 in the appendix).
         n_parallel_processes: Number of parallel processes to use.
 
     Returns:
@@ -182,6 +213,10 @@ def infer(components, sample_features, difference_matrices, difference_penalty=1
     xis = _update_xis(sample_features,
                       difference_matrices,
                       difference_penalty,
+                      max_iter=max_admm_iter,
+                      max_primal_dual_iter=max_primal_dual_iter,
+                      max_dirichlet_iter=max_dirichlet_iter,
+                      max_dirichlet_ls_iter=max_dirichlet_ls_iter,
                       gamma=gamma,
                       n_parallel_processes=n_parallel_processes,
                       verbosity=0)
