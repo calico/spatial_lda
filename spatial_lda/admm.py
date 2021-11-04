@@ -134,7 +134,6 @@ def line_search(gamma, u, C, e, rho, s, t, l):
         step_max = np.min((step_max, np.min(u[neg_du] / (-du[neg_du]))))
 
     step = step_max * 0.99
-    r = compute_r(gamma, u, C, e, rho, s, t)
     for lsit in range(MAXLSITER):
         new_gamma = gamma + step * dgamma
         new_u = u + step * du
